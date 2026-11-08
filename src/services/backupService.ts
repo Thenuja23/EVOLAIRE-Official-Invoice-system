@@ -140,9 +140,9 @@ function restoreIntoLocalWorkspace(userId: string, backup: BackupFile): RestoreC
     if (!raw.invoice_id || amount <= 0) continue
     const method =
       raw.method === 'cash' ||
-      raw.method === 'bank transfer' ||
-      raw.method === 'card' ||
-      raw.method === 'other'
+        raw.method === 'bank transfer' ||
+        raw.method === 'card' ||
+        raw.method === 'other'
         ? raw.method
         : 'other'
     ws.payments.push({
@@ -293,9 +293,9 @@ async function restoreBackupFallback(backup: BackupFile): Promise<RestoreCounts>
       if (!raw.invoice_id || amount <= 0) continue
       const method =
         raw.method === 'cash' ||
-        raw.method === 'bank transfer' ||
-        raw.method === 'card' ||
-        raw.method === 'other'
+          raw.method === 'bank transfer' ||
+          raw.method === 'card' ||
+          raw.method === 'other'
           ? raw.method
           : 'other'
       await client

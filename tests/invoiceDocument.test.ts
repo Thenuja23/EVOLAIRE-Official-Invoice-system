@@ -202,3 +202,4 @@ describe('Invoice Document & Print Generation (Phase 4)', () => {
     expect(PRINT_PAGE_STYLE).toContain('print-color-adjust: exact')
   })
 })
+
