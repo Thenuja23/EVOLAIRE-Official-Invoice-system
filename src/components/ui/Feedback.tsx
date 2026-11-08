@@ -33,14 +33,16 @@ interface EmptyStateProps {
   icon?: ReactNode
   action?: ReactNode
   className?: string
+  compact?: boolean
 }
 
-export function EmptyState({ title, description, icon, action, className }: EmptyStateProps) {
+export function EmptyState({ title, description, icon, action, className, compact = false }: EmptyStateProps) {
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-ink-200 bg-white px-6 py-14 text-center',
+        'flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-ink-200 bg-white text-center',
         'dark:border-ink-800 dark:bg-ink-900/40',
+        compact ? 'px-4 py-6' : 'px-6 py-14',
         className,
       )}
     >

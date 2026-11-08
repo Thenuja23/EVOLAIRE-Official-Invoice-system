@@ -80,6 +80,34 @@ export function downloadJson(value: unknown, filename: string): void {
   downloadBlob(JSON.stringify(value, null, 2), filename, 'application/json')
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+}
+
+/**
+ * Excel opens a plain HTML table saved with an .xls extension. This avoids a
+ * heavy spreadsheet dependency for the one owner's export needs.
+ */
+export function downloadExcelHtml(rows: string[][], filename: string, title = 'Invoices'): void {
+  const [header, ...body] = rows
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title></head>
+<body><table border="1" cellspacing="0" cellpadding="6">
+<thead><tr>${header
+    .map((cell) => `<th style="background:#dce9f6;text-align:left">${escapeHtml(cell)}</th>`)
+    .join('')}</tr></thead>
+<tbody>${body
+    .map(
+      (row) =>
+        `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`,
+    )
+    .join('')}</tbody></table></body></html>`
+  downloadBlob(html, filename, 'application/vnd.ms-excel;charset=utf-8')
+}
+
 export function readFileAsText(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
