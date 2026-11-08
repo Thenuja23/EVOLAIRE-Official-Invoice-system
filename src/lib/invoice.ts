@@ -2,13 +2,13 @@ import type { Json } from '@/types/database'
 import type {
   BusinessSnapshot,
   Invoice,
-  InvoiceFormValues,
   InvoiceItem,
   InvoiceItemPayload,
   InvoicePayload,
   InvoiceSummary,
   Settings,
 } from '@/types/models'
+import type { InvoiceFormValues } from '@/types/validation'
 import { formatDate, toNumber } from './format'
 
 export const MAX_INVOICE_ITEMS = 14
