@@ -10,9 +10,9 @@ import {
   recalculateLocalInvoiceTotals,
   toInvoiceSummary,
   validateLocalPaymentWrite,
-  writeLocalWorkspace,
 } from '@/services/serviceUtils'
-import type { Invoice, LocalWorkspace } from '@/services/serviceUtils'
+import type { LocalWorkspace } from '@/services/serviceUtils'
+import type { Invoice } from '@/types/models'
 
 describe('Local Workspace & State Machine Integrity (Phase 3 & Phase 5)', () => {
   const testUserId = 'test-owner-uuid-1234'

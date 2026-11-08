@@ -1,7 +1,7 @@
 import { formatAmount, toNumber, todayISO } from '@/lib/format'
 import { DEFAULT_PAYMENT_TERMS, calculateDisplayTotals, roundMoney } from '@/lib/invoice'
 import { getSupabase } from '@/lib/supabase'
-import type {
+export type {
   Customer,
   Invoice,
   InvoiceItem,
