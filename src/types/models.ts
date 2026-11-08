@@ -139,6 +139,28 @@ export interface InvoicePayload {
   items?: InvoiceItemPayload[]
 }
 
+/** Everything the A4 invoice document needs to render. */
+export interface InvoiceDocumentData {
+  invoiceNumber: string
+  invoiceDate: string
+  dueDate: string
+  projectName: string
+  customerName: string
+  notes: string
+  paymentTerms: string
+  business: BusinessSnapshot
+  logoUrl: string | null
+  currency: string
+  items: Array<{ description: string; unit: number; price: number; lineTotal: number }>
+  subtotal: number
+  discountAmount: number
+  taxRate: number
+  taxAmount: number
+  total: number
+  showDiscount: boolean
+  showTax: boolean
+}
+
 export interface InvoiceListFilters {
   search?: string
   status?: PaymentStatus | 'all'
