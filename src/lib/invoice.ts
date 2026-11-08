@@ -65,7 +65,10 @@ export function calculateLineTotal(unit: number, price: number): number {
 }
 
 export function roundMoney(value: number): number {
-  return Math.round((value + Number.EPSILON) * 100) / 100
+  if (!Number.isFinite(value)) return 0
+  const sign = value < 0 ? -1 : 1
+  const abs = Math.abs(value)
+  return sign * (Math.round(abs * 100 + 1e-9) / 100)
 }
 
 export interface DisplayTotals {
