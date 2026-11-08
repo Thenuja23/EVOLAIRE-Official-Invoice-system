@@ -915,8 +915,8 @@ as $$
   select
     count(i.id) as invoice_count,
     coalesce(sum(i.total), 0)::numeric(12, 2) as billed,
-    coalesce(sum(coalesce(p.paid, 0)), 0)::numeric(12, 2) as paid,
-    coalesce(sum(i.total - coalesce(p.paid, 0)), 0)::numeric(12, 2) as outstanding
+    coalesce(sum(coalesce(p.amount, 0)), 0)::numeric(12, 2) as paid,
+    coalesce(sum(i.total - coalesce(p.amount, 0)), 0)::numeric(12, 2) as outstanding
   from public.invoices i
   left join paid p on p.invoice_id = i.id
   where i.user_id = auth.uid()
