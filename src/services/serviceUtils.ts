@@ -130,6 +130,20 @@ function workspaceStorageKey(userId: string): string {
   return `${LOCAL_WORKSPACE_PREFIX}.${userId}`
 }
 
+function getStorage(): Storage | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage
+    }
+    if (typeof globalThis !== 'undefined' && (globalThis as unknown as { localStorage?: Storage }).localStorage) {
+      return (globalThis as unknown as { localStorage: Storage }).localStorage
+    }
+  } catch {
+    // Restricted or headless environment
+  }
+  return null
+}
+
 export function readLocalWorkspace(userId: string): LocalWorkspace {
   const fallback: LocalWorkspace = {
     active: false,
@@ -141,12 +155,13 @@ export function readLocalWorkspace(userId: string): LocalWorkspace {
     logo_data_url: null,
   }
 
-  if (typeof window === 'undefined') return fallback
+  const storage = getStorage()
+  if (!storage) return fallback
 
   try {
-    const raw = window.localStorage.getItem(workspaceStorageKey(userId))
+    const raw = storage.getItem(workspaceStorageKey(userId))
     if (!raw) {
-      window.localStorage.setItem(workspaceStorageKey(userId), JSON.stringify(fallback))
+      storage.setItem(workspaceStorageKey(userId), JSON.stringify(fallback))
       return fallback
     }
     const parsed = JSON.parse(raw) as Partial<LocalWorkspace>
@@ -167,9 +182,10 @@ export function readLocalWorkspace(userId: string): LocalWorkspace {
 }
 
 export function writeLocalWorkspace(userId: string, workspace: LocalWorkspace): LocalWorkspace {
-  if (typeof window !== 'undefined') {
+  const storage = getStorage()
+  if (storage) {
     try {
-      window.localStorage.setItem(workspaceStorageKey(userId), JSON.stringify(workspace))
+      storage.setItem(workspaceStorageKey(userId), JSON.stringify(workspace))
     } catch {
       // Ignore storage quota errors in restricted environments.
     }

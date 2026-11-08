@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest'
 import {
   activateLocalWorkspace,
   createDefaultSettings,
@@ -16,11 +16,31 @@ import type { Invoice, LocalWorkspace } from '@/services/serviceUtils'
 
 describe('Local Workspace & State Machine Integrity (Phase 3 & Phase 5)', () => {
   const testUserId = 'test-owner-uuid-1234'
+  const store = new Map<string, string>()
+
+  beforeAll(() => {
+    if (typeof globalThis.localStorage === 'undefined' || !globalThis.localStorage.getItem) {
+      const storageMock = {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => store.set(k, String(v)),
+        removeItem: (k: string) => store.delete(k),
+        clear: () => store.clear(),
+        key: (idx: number) => Array.from(store.keys())[idx] ?? null,
+        get length() {
+          return store.size
+        },
+      }
+      Object.defineProperty(globalThis, 'localStorage', {
+        value: storageMock,
+        writable: true,
+      })
+    }
+  })
 
   beforeEach(() => {
-    // Clear localStorage mockup
-    if (typeof window !== 'undefined') {
-      window.localStorage.clear()
+    store.clear()
+    if (typeof globalThis.localStorage !== 'undefined' && globalThis.localStorage.clear) {
+      globalThis.localStorage.clear()
     }
   })
 
