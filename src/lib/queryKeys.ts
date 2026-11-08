@@ -3,6 +3,7 @@ export const queryKeys = {
   settings: ['settings'] as const,
   logo: (path: string | null | undefined) => ['logo', path ?? 'none'] as const,
   customers: (search = '') => ['customers', search] as const,
+  deletedCustomers: ['customers', 'deleted'] as const,
   customer: (id: string) => ['customer', id] as const,
   customerStats: (id: string) => ['customer-stats', id] as const,
   invoices: (filters: unknown) => ['invoices', filters] as const,

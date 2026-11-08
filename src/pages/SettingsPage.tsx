@@ -32,11 +32,10 @@ import {
   useLogoUrl,
 } from '@/hooks/useSettings'
 import { CURRENCY_SUGGESTIONS } from '@/lib/constants'
-import { downloadJson } from '@/lib/download'
+import { downloadJson, readFileAsText } from '@/lib/download'
 import { getErrorMessage } from '@/lib/errors'
-import { formatDateTime, sanitizeFilename, todayISO } from '@/lib/format'
+import { formatDateTime, todayISO } from '@/lib/format'
 import { formatInvoiceNumberPreview } from '@/lib/invoice'
-import { readFileAsText } from '@/lib/download'
 import { backupFileSchema, settingsSchema, type SettingsValues } from '@/lib/validation'
 import { backupService } from '@/services/backupService'
 import type { BackupFile, Settings } from '@/types/models'
@@ -94,7 +93,6 @@ export function SettingsPage() {
     if (settings) form.reset(toFormValues(settings))
   }, [settings, form])
 
-  const currency = form.watch('currency') || settings?.currency || 'LKR'
   const previewNumber = formatInvoiceNumberPreview({
     invoice_prefix: form.watch('invoice_prefix') || 'EVO',
     invoice_format: form.watch('invoice_format') || '{prefix}-{year}-{seq}',
@@ -609,8 +607,6 @@ export function SettingsPage() {
         confirmLabel="Restore backup"
         loading={restoring}
       />
-
-      <span className="sr-only">{currency}</span>
     </div>
   )
 }

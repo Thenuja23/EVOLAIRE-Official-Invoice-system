@@ -25,3 +25,10 @@ export function useCustomerStats(id: string | undefined) {
     enabled: Boolean(id),
   })
 }
+
+export function useDeletedCustomers() {
+  return useQuery({
+    queryKey: queryKeys.deletedCustomers,
+    queryFn: () => customerService.list({ includeDeleted: true }),
+  })
+}
