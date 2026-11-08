@@ -118,7 +118,6 @@ export function InvoiceEditorPage() {
     reset,
     getValues,
     setValue,
-    setError,
     trigger,
     watch,
   } = form

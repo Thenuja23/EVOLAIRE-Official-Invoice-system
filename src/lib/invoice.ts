@@ -8,7 +8,7 @@ import type {
   InvoiceSummary,
   Settings,
 } from '@/types/models'
-import type { InvoiceFormValues } from '@/types/validation'
+import type { InvoiceFormValues } from './validation'
 import { formatDate, toNumber } from './format'
 
 export const MAX_INVOICE_ITEMS = 14

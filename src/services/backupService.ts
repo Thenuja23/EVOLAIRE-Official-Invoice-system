@@ -1,4 +1,5 @@
 import { getSupabase } from '@/lib/supabase'
+import type { Json } from '@/types/database'
 import type { BackupFile } from '@/types/models'
 
 type RestoreCounts = {
@@ -40,7 +41,7 @@ export const backupService = {
   async restore(backup: BackupFile): Promise<RestoreCounts> {
     const client = getSupabase()
     const { data, error } = await client.rpc('restore_backup', {
-      payload: backup as unknown as Record<string, unknown>,
+      payload: backup as unknown as Json,
     })
     if (error) throw error
     const result = (data ?? {}) as Record<string, unknown>

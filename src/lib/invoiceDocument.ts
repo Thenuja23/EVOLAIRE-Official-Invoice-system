@@ -7,11 +7,11 @@ import { toNumber } from '@/lib/format'
 import type {
   BusinessSnapshot,
   InvoiceDocumentData,
-  InvoiceFormValues,
   InvoiceItem,
   InvoiceSummary,
   Settings,
 } from '@/types/models'
+import type { InvoiceFormValues } from './validation'
 
 export function buildDocumentFromInvoice(options: {
   invoice: InvoiceSummary
