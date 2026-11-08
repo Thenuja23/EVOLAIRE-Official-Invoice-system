@@ -70,6 +70,10 @@ export function InvoiceViewPage() {
   )
   const logo = useLogoUrl(snapshot?.logo_path)
 
+  useEffect(() => {
+    if (logo.isError) toast.error(`The business logo could not load: ${getErrorMessage(logo.error)}`)
+  }, [logo.isError, logo.error])
+
   const [paymentOpen, setPaymentOpen] = useState(false)
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null)
   const [defaultAmount, setDefaultAmount] = useState<number | undefined>(undefined)

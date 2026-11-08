@@ -84,6 +84,10 @@ export function SettingsPage() {
   const settings = settingsQuery.data
   const logo = useLogoUrl(settings?.logo_path)
 
+  useEffect(() => {
+    if (logo.isError) toast.error(`The business logo could not load: ${getErrorMessage(logo.error)}`)
+  }, [logo.isError, logo.error])
+
   const form = useForm<SettingsValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: settings ? toFormValues(settings) : undefined,
@@ -391,7 +395,7 @@ export function SettingsPage() {
           <Card>
             <CardHeader
               title="Invoice numbering"
-              description="The sequence is consumed only when you click Generate in the editor, so numbers are never reused."
+              description="A number is reserved when a new invoice is opened or when you generate another one, so numbers are never reused."
               action={<RefreshCw className="h-4 w-4 text-ink-400" />}
             />
             <div className="grid gap-4 p-5 pt-4 sm:grid-cols-2">

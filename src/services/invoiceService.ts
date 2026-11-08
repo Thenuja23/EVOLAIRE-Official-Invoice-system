@@ -1,6 +1,7 @@
 import { addDaysISO, addMonthsISO, todayISO } from '@/lib/format'
 import { invoiceItemsToPayload } from '@/lib/invoice'
 import { getSupabase } from '@/lib/supabase'
+import { fetchAllPages } from '@/services/serviceUtils'
 import type { Json } from '@/types/database'
 import type {
   InvoiceFull,
@@ -101,7 +102,8 @@ export const invoiceService = {
         .select('*')
         .eq('id', invoice.customer_id)
         .maybeSingle()
-      if (!customerResult.error) customer = customerResult.data
+      if (customerResult.error) throw customerResult.error
+      customer = customerResult.data
     }
 
     return {
@@ -225,14 +227,17 @@ export const invoiceService = {
 
   async exportAll(includeDeleted = false): Promise<InvoiceSummary[]> {
     const client = getSupabase()
-    let query = client
-      .from('invoice_summary')
-      .select('*')
-      .order('invoice_date', { ascending: false })
-    if (!includeDeleted) query = query.is('deleted_at', null)
-    const { data, error } = await query
-    if (error) throw error
-    return (data ?? []) as InvoiceSummary[]
+    const rows = await fetchAllPages((from, to) => {
+      let query = client
+        .from('invoice_summary')
+        .select('*')
+        .order('invoice_date', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, to)
+      if (!includeDeleted) query = query.is('deleted_at', null)
+      return query
+    })
+    return rows as InvoiceSummary[]
   },
 }
 

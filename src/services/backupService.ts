@@ -1,4 +1,5 @@
 import { getSupabase } from '@/lib/supabase'
+import { fetchAllPages } from '@/services/serviceUtils'
 import type { Json } from '@/types/database'
 import type { BackupFile } from '@/types/models'
 
@@ -13,27 +14,33 @@ export const backupService = {
   async exportAll(): Promise<BackupFile> {
     const client = getSupabase()
     const [settings, customers, invoices, items, payments] = await Promise.all([
-      client.from('settings').select('*'),
-      client.from('customers').select('*'),
-      client.from('invoices').select('*'),
-      client.from('invoice_items').select('*'),
-      client.from('payments').select('*'),
+      fetchAllPages((from, to) =>
+        client.from('settings').select('*').order('id').range(from, to),
+      ),
+      fetchAllPages((from, to) =>
+        client.from('customers').select('*').order('id').range(from, to),
+      ),
+      fetchAllPages((from, to) =>
+        client.from('invoices').select('*').order('id').range(from, to),
+      ),
+      fetchAllPages((from, to) =>
+        client.from('invoice_items').select('*').order('id').range(from, to),
+      ),
+      fetchAllPages((from, to) =>
+        client.from('payments').select('*').order('id').range(from, to),
+      ),
     ])
-
-    for (const result of [settings, customers, invoices, items, payments]) {
-      if (result.error) throw result.error
-    }
 
     return {
       format: 'evolaire-backup',
       version: 1,
       exported_at: new Date().toISOString(),
       tables: {
-        settings: settings.data ?? [],
-        customers: customers.data ?? [],
-        invoices: invoices.data ?? [],
-        invoice_items: items.data ?? [],
-        payments: payments.data ?? [],
+        settings,
+        customers,
+        invoices,
+        invoice_items: items,
+        payments,
       },
     }
   },

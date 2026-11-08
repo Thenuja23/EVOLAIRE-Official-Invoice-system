@@ -93,6 +93,7 @@ export function InvoiceEditorPage() {
   const [savedId, setSavedId] = useState<string | undefined>(routeId)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+  const [autosaveRevision, setAutosaveRevision] = useState(0)
   const [savingStatus, setSavingStatus] = useState<'draft' | 'final' | null>(null)
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false)
   const [businessOpen, setBusinessOpen] = useState(false)
@@ -127,6 +128,10 @@ export function InvoiceEditorPage() {
   const logoPath = useWatch({ control, name: 'business.logo_path' })
   const logo = useLogoUrl(logoPath ?? undefined)
   const isDirty = formState.isDirty
+
+  useEffect(() => {
+    if (logo.isError) toast.error(`The business logo could not load: ${getErrorMessage(logo.error)}`)
+  }, [logo.isError, logo.error])
 
   const settings = settingsQuery.data
   const currency = settings?.currency ?? 'LKR'
@@ -215,6 +220,7 @@ export function InvoiceEditorPage() {
       const parsed = invoiceFormSchema.safeParse(current)
       if (!parsed.success) return
 
+      const submittedValues = JSON.stringify(current)
       savingRef.current = true
       setSaveState('saving')
       try {
@@ -227,9 +233,15 @@ export function InvoiceEditorPage() {
         )
         savedIdRef.current = id
         setSavedId(id)
-        reset(getValues())
         setLastSavedAt(new Date())
-        setSaveState('saved')
+        const latestValues = getValues()
+        if (JSON.stringify(latestValues) === submittedValues) {
+          reset(latestValues)
+          setSaveState('saved')
+        } else {
+          setSaveState('idle')
+          setAutosaveRevision((revision) => revision + 1)
+        }
       } catch (error) {
         setSaveState('error')
         toast.error(getErrorMessage(error))
@@ -239,7 +251,7 @@ export function InvoiceEditorPage() {
     }, 2800)
 
     return () => window.clearTimeout(timer)
-  }, [ready, isDirty, settings, values, getValues, reset])
+  }, [ready, isDirty, settings, values, getValues, reset, autosaveRevision])
 
   const generateNumber = async () => {
     try {

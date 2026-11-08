@@ -47,7 +47,7 @@ export const settingsService = {
     if (!path) return null
     const client = getSupabase()
     const { data, error } = await client.storage.from('logos').createSignedUrl(path, 60 * 60)
-    if (error) return null
+    if (error) throw error
     return data?.signedUrl ?? null
   },
 

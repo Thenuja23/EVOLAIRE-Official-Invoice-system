@@ -266,21 +266,24 @@ declare
   v_tax_enabled boolean := false;
   v_discount_enabled boolean := false;
   v_total numeric(12, 2);
+  v_paid numeric(12, 2);
 begin
-  select coalesce(sum(line_total), 0)
-    into v_subtotal
-    from public.invoice_items
-   where invoice_id = p_invoice_id;
-
+  -- Lock the parent so payment writes and total changes serialize.
   select i.discount_amount, i.tax_rate
     into v_discount, v_tax_rate
     from public.invoices i
-   where i.id = p_invoice_id;
+   where i.id = p_invoice_id
+   for update;
 
   -- The invoice may already have been removed.
   if not found then
     return;
   end if;
+
+  select coalesce(sum(line_total), 0)
+    into v_subtotal
+    from public.invoice_items
+   where invoice_id = p_invoice_id;
 
   select s.tax_enabled, s.discount_enabled
     into v_tax_enabled, v_discount_enabled
@@ -304,9 +307,21 @@ begin
     v_total := v_total + round(v_total * coalesce(v_tax_rate, 0) / 100, 2);
   end if;
 
+  v_total := round(greatest(v_total, 0), 2);
+
+  select coalesce(sum(amount), 0)
+    into v_paid
+    from public.payments
+   where invoice_id = p_invoice_id;
+
+  if v_paid > v_total then
+    raise exception 'The invoice total cannot be lower than its recorded payments. Remove or adjust payments first.'
+      using errcode = '23514';
+  end if;
+
   update public.invoices
      set subtotal = round(v_subtotal, 2),
-         total = round(greatest(v_total, 0), 2)
+         total = v_total
    where id = p_invoice_id;
 end;
 $$;
@@ -367,7 +382,8 @@ begin
     into v_total, v_deleted_at
     from public.invoices
    where id = new.invoice_id
-     and user_id = auth.uid();
+     and user_id = auth.uid()
+   for update;
 
   if not found then
     raise exception 'Invoice not found.' using errcode = 'P0002';
