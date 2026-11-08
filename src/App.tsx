@@ -9,6 +9,7 @@ import { isSupabaseConfigured } from '@/lib/supabase'
 import { CustomerDetailPage } from '@/pages/CustomerDetailPage'
 import { CustomersPage } from '@/pages/CustomersPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { DevInvoicePreviewPage } from '@/pages/DevInvoicePreviewPage'
 import { InvoiceEditorPage } from '@/pages/InvoiceEditorPage'
 import { InvoiceListPage } from '@/pages/InvoiceListPage'
 import { InvoiceViewPage } from '@/pages/InvoiceViewPage'
@@ -35,6 +36,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/__preview" element={<DevInvoicePreviewPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
