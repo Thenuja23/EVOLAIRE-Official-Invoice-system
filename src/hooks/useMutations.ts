@@ -100,6 +100,22 @@ export function useDeleteCustomer() {
   })
 }
 
+export function useRestoreCustomer() {
+  const invalidate = useInvalidateAll()
+  return useMutation({
+    mutationFn: (id: string) => customerService.restore(id),
+    onSuccess: invalidate,
+  })
+}
+
+export function usePermanentlyDeleteCustomer() {
+  const invalidate = useInvalidateAll()
+  return useMutation({
+    mutationFn: (id: string) => customerService.permanentlyDelete(id),
+    onSuccess: invalidate,
+  })
+}
+
 export function useCreatePayment(invoiceId: string) {
   const queryClient = useQueryClient()
   const invalidate = useInvalidateAll()
@@ -112,7 +128,7 @@ export function useCreatePayment(invoiceId: string) {
   })
 }
 
-export function useUpdatePayment(invoiceId: string) {
+export function useUpdatePayment(_invoiceId: string) {
   const invalidate = useInvalidateAll()
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: PaymentInput }) =>
@@ -121,7 +137,7 @@ export function useUpdatePayment(invoiceId: string) {
   })
 }
 
-export function useDeletePayment(invoiceId: string) {
+export function useDeletePayment(_invoiceId: string) {
   const invalidate = useInvalidateAll()
   return useMutation({
     mutationFn: (id: string) => paymentService.remove(id),
