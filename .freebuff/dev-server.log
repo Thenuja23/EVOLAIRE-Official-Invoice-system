@@ -1,0 +1,9 @@
+
+> evolaire-invoice-system@1.0.0 dev
+> vite --host 127.0.0.1 --port 5187 --strictPort
+
+1:09:53 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
+
+  VITE v6.4.5  ready in 185 ms
+
+  ➜  Local:   http://127.0.0.1:5187/
