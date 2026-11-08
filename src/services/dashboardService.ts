@@ -2,11 +2,16 @@ import { addDaysISO, addMonthsISO, toNumber, todayISO } from '@/lib/format'
 import { roundMoney } from '@/lib/invoice'
 import { getSupabase } from '@/lib/supabase'
 import {
+  activateLocalWorkspace,
   fetchAllPages,
   fetchInvoiceSummariesFallback,
+  getCurrentUserId,
+  isLocalWorkspaceActive,
+  isRlsOrPermissionError,
   isSchemaCacheMissingError,
   isSchemaFeatureAvailable,
   markSchemaFeatureUnavailable,
+  readLocalWorkspace,
 } from '@/services/serviceUtils'
 import type {
   DashboardMetrics,
@@ -16,27 +21,10 @@ import type {
   Payment,
 } from '@/types/models'
 
-async function computeMetricsFallback(): Promise<DashboardMetrics> {
-  const client = getSupabase()
-  const [finalInvoices, payments] = await Promise.all([
-    fetchAllPages<Pick<Invoice, 'id' | 'total' | 'invoice_date' | 'due_date'>>((from, to) =>
-      client
-        .from('invoices')
-        .select('id, total, invoice_date, due_date')
-        .eq('status', 'final')
-        .is('deleted_at', null)
-        .order('id', { ascending: true })
-        .range(from, to),
-    ),
-    fetchAllPages<Pick<Payment, 'invoice_id' | 'amount' | 'paid_on'>>((from, to) =>
-      client
-        .from('payments')
-        .select('invoice_id, amount, paid_on')
-        .order('id', { ascending: true })
-        .range(from, to),
-    ),
-  ])
-
+function computeMetricsFromLists(
+  finalInvoices: Array<Pick<Invoice, 'id' | 'total' | 'invoice_date' | 'due_date'>>,
+  payments: Array<Pick<Payment, 'invoice_id' | 'amount' | 'paid_on'>>,
+): DashboardMetrics {
   const finalInvoiceIds = new Set(finalInvoices.map((inv) => inv.id))
   const paidByInvoice = new Map<string, number>()
   const today = todayISO()
@@ -81,27 +69,10 @@ async function computeMetricsFallback(): Promise<DashboardMetrics> {
   }
 }
 
-async function computeMonthlyRevenueFallback(): Promise<MonthlyRevenuePoint[]> {
-  const client = getSupabase()
-  const [finalInvoices, payments] = await Promise.all([
-    fetchAllPages<Pick<Invoice, 'id' | 'total' | 'invoice_date'>>((from, to) =>
-      client
-        .from('invoices')
-        .select('id, total, invoice_date')
-        .eq('status', 'final')
-        .is('deleted_at', null)
-        .order('id', { ascending: true })
-        .range(from, to),
-    ),
-    fetchAllPages<Pick<Payment, 'invoice_id' | 'amount' | 'paid_on'>>((from, to) =>
-      client
-        .from('payments')
-        .select('invoice_id, amount, paid_on')
-        .order('id', { ascending: true })
-        .range(from, to),
-    ),
-  ])
-
+function computeMonthlyRevenueFromLists(
+  finalInvoices: Array<Pick<Invoice, 'id' | 'total' | 'invoice_date'>>,
+  payments: Array<Pick<Payment, 'invoice_id' | 'amount' | 'paid_on'>>,
+): MonthlyRevenuePoint[] {
   const currentMonthStart = `${todayISO().slice(0, 7)}-01`
   const months: string[] = []
   for (let i = 11; i >= 0; i -= 1) {
@@ -134,9 +105,102 @@ async function computeMonthlyRevenueFallback(): Promise<MonthlyRevenuePoint[]> {
   }))
 }
 
+async function computeMetricsFallback(): Promise<DashboardMetrics> {
+  const userId = await getCurrentUserId()
+  if (isLocalWorkspaceActive(userId)) {
+    const ws = readLocalWorkspace(userId)
+    const finalInvoices = ws.invoices.filter((inv) => inv.status === 'final' && !inv.deleted_at)
+    return computeMetricsFromLists(finalInvoices, ws.payments)
+  }
+
+  const client = getSupabase()
+  try {
+    const [finalInvoices, payments] = await Promise.all([
+      fetchAllPages<Pick<Invoice, 'id' | 'total' | 'invoice_date' | 'due_date'>>((from, to) =>
+        client
+          .from('invoices')
+          .select('id, total, invoice_date, due_date')
+          .eq('status', 'final')
+          .is('deleted_at', null)
+          .order('id', { ascending: true })
+          .range(from, to),
+      ),
+      fetchAllPages<Pick<Payment, 'invoice_id' | 'amount' | 'paid_on'>>((from, to) =>
+        client
+          .from('payments')
+          .select('invoice_id, amount, paid_on')
+          .order('id', { ascending: true })
+          .range(from, to),
+      ),
+    ])
+
+    if (finalInvoices.length === 0 && isLocalWorkspaceActive(userId)) {
+      const ws = readLocalWorkspace(userId)
+      const localFinal = ws.invoices.filter((inv) => inv.status === 'final' && !inv.deleted_at)
+      return computeMetricsFromLists(localFinal, ws.payments)
+    }
+
+    return computeMetricsFromLists(finalInvoices, payments)
+  } catch (error) {
+    if (isRlsOrPermissionError(error)) {
+      const ws = activateLocalWorkspace(userId)
+      const localFinal = ws.invoices.filter((inv) => inv.status === 'final' && !inv.deleted_at)
+      return computeMetricsFromLists(localFinal, ws.payments)
+    }
+    throw error
+  }
+}
+
+async function computeMonthlyRevenueFallback(): Promise<MonthlyRevenuePoint[]> {
+  const userId = await getCurrentUserId()
+  if (isLocalWorkspaceActive(userId)) {
+    const ws = readLocalWorkspace(userId)
+    const finalInvoices = ws.invoices.filter((inv) => inv.status === 'final' && !inv.deleted_at)
+    return computeMonthlyRevenueFromLists(finalInvoices, ws.payments)
+  }
+
+  const client = getSupabase()
+  try {
+    const [finalInvoices, payments] = await Promise.all([
+      fetchAllPages<Pick<Invoice, 'id' | 'total' | 'invoice_date'>>((from, to) =>
+        client
+          .from('invoices')
+          .select('id, total, invoice_date')
+          .eq('status', 'final')
+          .is('deleted_at', null)
+          .order('id', { ascending: true })
+          .range(from, to),
+      ),
+      fetchAllPages<Pick<Payment, 'invoice_id' | 'amount' | 'paid_on'>>((from, to) =>
+        client
+          .from('payments')
+          .select('invoice_id, amount, paid_on')
+          .order('id', { ascending: true })
+          .range(from, to),
+      ),
+    ])
+
+    if (finalInvoices.length === 0 && isLocalWorkspaceActive(userId)) {
+      const ws = readLocalWorkspace(userId)
+      const localFinal = ws.invoices.filter((inv) => inv.status === 'final' && !inv.deleted_at)
+      return computeMonthlyRevenueFromLists(localFinal, ws.payments)
+    }
+
+    return computeMonthlyRevenueFromLists(finalInvoices, payments)
+  } catch (error) {
+    if (isRlsOrPermissionError(error)) {
+      const ws = activateLocalWorkspace(userId)
+      const localFinal = ws.invoices.filter((inv) => inv.status === 'final' && !inv.deleted_at)
+      return computeMonthlyRevenueFromLists(localFinal, ws.payments)
+    }
+    throw error
+  }
+}
+
 export const dashboardService = {
   async metrics(): Promise<DashboardMetrics> {
-    if (isSchemaFeatureAvailable('dashboard_metrics')) {
+    const userId = await getCurrentUserId()
+    if (!isLocalWorkspaceActive(userId) && isSchemaFeatureAvailable('dashboard_metrics')) {
       const client = getSupabase()
       const { data, error } = await client.rpc('dashboard_metrics')
       if (!error) {
@@ -148,7 +212,7 @@ export const dashboardService = {
           overdue_count: Number(row?.overdue_count ?? 0),
         }
       }
-      if (!isSchemaCacheMissingError(error)) throw error
+      if (!isSchemaCacheMissingError(error) && !isRlsOrPermissionError(error)) throw error
       markSchemaFeatureUnavailable('dashboard_metrics')
     }
 
@@ -156,7 +220,8 @@ export const dashboardService = {
   },
 
   async monthlyRevenue(): Promise<MonthlyRevenuePoint[]> {
-    if (isSchemaFeatureAvailable('monthly_revenue')) {
+    const userId = await getCurrentUserId()
+    if (!isLocalWorkspaceActive(userId) && isSchemaFeatureAvailable('monthly_revenue')) {
       const client = getSupabase()
       const { data, error } = await client.rpc('monthly_revenue')
       if (!error) {
@@ -166,7 +231,7 @@ export const dashboardService = {
           received: Number(point.received ?? 0),
         }))
       }
-      if (!isSchemaCacheMissingError(error)) throw error
+      if (!isSchemaCacheMissingError(error) && !isRlsOrPermissionError(error)) throw error
       markSchemaFeatureUnavailable('monthly_revenue')
     }
 
@@ -174,7 +239,8 @@ export const dashboardService = {
   },
 
   async recentInvoices(limit = 6): Promise<InvoiceSummary[]> {
-    if (isSchemaFeatureAvailable('invoice_summary')) {
+    const userId = await getCurrentUserId()
+    if (!isLocalWorkspaceActive(userId) && isSchemaFeatureAvailable('invoice_summary')) {
       const client = getSupabase()
       const { data, error } = await client
         .from('invoice_summary')
@@ -183,7 +249,7 @@ export const dashboardService = {
         .order('created_at', { ascending: false })
         .limit(limit)
       if (!error) return (data ?? []) as InvoiceSummary[]
-      if (!isSchemaCacheMissingError(error)) throw error
+      if (!isSchemaCacheMissingError(error) && !isRlsOrPermissionError(error)) throw error
       markSchemaFeatureUnavailable('invoice_summary')
     }
 
@@ -194,7 +260,8 @@ export const dashboardService = {
   },
 
   async overdueInvoices(limit = 5): Promise<InvoiceSummary[]> {
-    if (isSchemaFeatureAvailable('invoice_summary')) {
+    const userId = await getCurrentUserId()
+    if (!isLocalWorkspaceActive(userId) && isSchemaFeatureAvailable('invoice_summary')) {
       const client = getSupabase()
       const { data, error } = await client
         .from('invoice_summary')
@@ -204,7 +271,7 @@ export const dashboardService = {
         .order('due_date', { ascending: true })
         .limit(limit)
       if (!error) return (data ?? []) as InvoiceSummary[]
-      if (!isSchemaCacheMissingError(error)) throw error
+      if (!isSchemaCacheMissingError(error) && !isRlsOrPermissionError(error)) throw error
       markSchemaFeatureUnavailable('invoice_summary')
     }
 
@@ -218,8 +285,9 @@ export const dashboardService = {
   async upcomingInvoices(days = 7, limit = 5): Promise<InvoiceSummary[]> {
     const today = todayISO()
     const until = addDaysISO(today, days)
+    const userId = await getCurrentUserId()
 
-    if (isSchemaFeatureAvailable('invoice_summary')) {
+    if (!isLocalWorkspaceActive(userId) && isSchemaFeatureAvailable('invoice_summary')) {
       const client = getSupabase()
       const { data, error } = await client
         .from('invoice_summary')
@@ -232,7 +300,7 @@ export const dashboardService = {
         .order('due_date', { ascending: true })
         .limit(limit)
       if (!error) return (data ?? []) as InvoiceSummary[]
-      if (!isSchemaCacheMissingError(error)) throw error
+      if (!isSchemaCacheMissingError(error) && !isRlsOrPermissionError(error)) throw error
       markSchemaFeatureUnavailable('invoice_summary')
     }
 
