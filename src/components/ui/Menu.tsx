@@ -20,6 +20,7 @@ interface MenuProps {
 
 export function Menu({ items, label = 'Actions', align = 'right', className }: MenuProps) {
   const [open, setOpen] = useState(false)
+  const [openUpwards, setOpenUpwards] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -38,17 +39,25 @@ export function Menu({ items, label = 'Actions', align = 'right', className }: M
     }
   }, [open])
 
+  const handleToggle = (event: React.MouseEvent) => {
+    event.stopPropagation()
+    if (!open && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const estimatedMenuHeight = items.length * 42 + 24
+      setOpenUpwards(spaceBelow < estimatedMenuHeight && rect.top > estimatedMenuHeight)
+    }
+    setOpen((value) => !value)
+  }
+
   return (
-    <div ref={containerRef} className={cn('relative inline-flex', className)}>
+    <div ref={containerRef} className={cn('relative inline-flex', open && 'z-50', className)}>
       <button
         type="button"
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={(event) => {
-          event.stopPropagation()
-          setOpen((value) => !value)
-        }}
+        onClick={handleToggle}
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900 dark:text-ink-400 dark:hover:bg-ink-800 dark:hover:text-white"
       >
         <MoreHorizontal className="h-4 w-4" />
@@ -57,8 +66,9 @@ export function Menu({ items, label = 'Actions', align = 'right', className }: M
         <div
           role="menu"
           className={cn(
-            'absolute top-full z-30 mt-1 w-52 overflow-hidden rounded-xl border border-ink-100 bg-white py-1 shadow-xl animate-fade-in',
+            'absolute z-50 w-52 overflow-hidden rounded-xl border border-ink-100 bg-white py-1 shadow-xl animate-fade-in',
             'dark:border-ink-800 dark:bg-ink-900',
+            openUpwards ? 'bottom-full mb-1' : 'top-full mt-1',
             align === 'right' ? 'right-0' : 'left-0',
           )}
         >

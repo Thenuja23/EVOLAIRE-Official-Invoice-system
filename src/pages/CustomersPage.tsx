@@ -139,12 +139,12 @@ export function CustomersPage() {
           }
         />
       ) : (
-        <Card className="overflow-hidden">
+        <Card className="overflow-visible">
           <div className="divide-y divide-ink-100 dark:divide-ink-800">
             {rows.map((customer) => (
               <div
                 key={customer.id}
-                className="flex items-start gap-3 p-4 transition-colors hover:bg-ink-50/60 dark:hover:bg-ink-800/30"
+                className="flex items-start gap-3 p-4 transition-colors first:rounded-t-2xl last:rounded-b-2xl hover:bg-ink-50/60 dark:hover:bg-ink-800/30"
               >
                 <Link
                   to={`/customers/${customer.id}`}
