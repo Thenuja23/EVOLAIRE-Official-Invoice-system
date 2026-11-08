@@ -1,7 +1,7 @@
 import { formatAmount, toNumber, todayISO } from '@/lib/format'
 import { DEFAULT_PAYMENT_TERMS, calculateDisplayTotals, roundMoney } from '@/lib/invoice'
 import { getSupabase } from '@/lib/supabase'
-export type {
+import type {
   Customer,
   Invoice,
   InvoiceItem,
@@ -10,6 +10,16 @@ export type {
   PaymentStatus,
   Settings,
 } from '@/types/models'
+
+export type {
+  Customer,
+  Invoice,
+  InvoiceItem,
+  InvoiceSummary,
+  Payment,
+  PaymentStatus,
+  Settings,
+}
 
 const EXPORT_PAGE_SIZE = 500
 const LOCAL_WORKSPACE_PREFIX = 'evolaire.workspace.v1'
