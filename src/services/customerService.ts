@@ -1,8 +1,73 @@
+import { toNumber } from '@/lib/format'
+import { roundMoney } from '@/lib/invoice'
 import { getSupabase } from '@/lib/supabase'
-import type { Customer, CustomerInput, CustomerStats } from '@/types/models'
+import {
+  fetchAllPages,
+  isSchemaCacheMissingError,
+  isSchemaFeatureAvailable,
+  markSchemaFeatureUnavailable,
+} from '@/services/serviceUtils'
+import type { Customer, CustomerInput, CustomerStats, Invoice, Payment } from '@/types/models'
 
 function sanitizeSearch(value: string): string {
   return value.replace(/[%_,()*\\]/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+async function computeCustomerStatsFallback(customerId: string): Promise<CustomerStats> {
+  const client = getSupabase()
+  const invoices = await fetchAllPages<Pick<Invoice, 'id' | 'total'>>((from, to) =>
+    client
+      .from('invoices')
+      .select('id, total')
+      .eq('customer_id', customerId)
+      .eq('status', 'final')
+      .is('deleted_at', null)
+      .order('id', { ascending: true })
+      .range(from, to),
+  )
+
+  if (invoices.length === 0) {
+    return {
+      invoice_count: 0,
+      billed: 0,
+      paid: 0,
+      outstanding: 0,
+    }
+  }
+
+  const invoiceIds = invoices.map((inv) => inv.id)
+  const { data: payments, error: paymentsError } = await client
+    .from('payments')
+    .select('invoice_id, amount')
+    .in('invoice_id', invoiceIds)
+  if (paymentsError) throw paymentsError
+
+  const paidByInvoice = new Map<string, number>()
+  for (const payment of (payments ?? []) as Array<Pick<Payment, 'invoice_id' | 'amount'>>) {
+    paidByInvoice.set(
+      payment.invoice_id,
+      roundMoney((paidByInvoice.get(payment.invoice_id) ?? 0) + toNumber(payment.amount)),
+    )
+  }
+
+  let billed = 0
+  let paid = 0
+  let outstanding = 0
+
+  for (const inv of invoices) {
+    const invTotal = toNumber(inv.total)
+    const invPaid = paidByInvoice.get(inv.id) ?? 0
+    billed = roundMoney(billed + invTotal)
+    paid = roundMoney(paid + invPaid)
+    outstanding = roundMoney(outstanding + (invTotal - invPaid))
+  }
+
+  return {
+    invoice_count: invoices.length,
+    billed,
+    paid,
+    outstanding,
+  }
 }
 
 export const customerService = {
@@ -89,15 +154,22 @@ export const customerService = {
   },
 
   async stats(customerId: string): Promise<CustomerStats> {
-    const client = getSupabase()
-    const { data, error } = await client.rpc('customer_stats', { p_customer_id: customerId })
-    if (error) throw error
-    const row = Array.isArray(data) ? data[0] : data
-    return {
-      invoice_count: Number(row?.invoice_count ?? 0),
-      billed: Number(row?.billed ?? 0),
-      paid: Number(row?.paid ?? 0),
-      outstanding: Number(row?.outstanding ?? 0),
+    if (isSchemaFeatureAvailable('customer_stats')) {
+      const client = getSupabase()
+      const { data, error } = await client.rpc('customer_stats', { p_customer_id: customerId })
+      if (!error) {
+        const row = Array.isArray(data) ? data[0] : data
+        return {
+          invoice_count: Number(row?.invoice_count ?? 0),
+          billed: Number(row?.billed ?? 0),
+          paid: Number(row?.paid ?? 0),
+          outstanding: Number(row?.outstanding ?? 0),
+        }
+      }
+      if (!isSchemaCacheMissingError(error)) throw error
+      markSchemaFeatureUnavailable('customer_stats')
     }
+
+    return computeCustomerStatsFallback(customerId)
   },
 }

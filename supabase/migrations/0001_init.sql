@@ -27,7 +27,7 @@ $$;
 -- Settings — exactly one row per user
 -- -----------------------------------------------------------------------------
 
-create table public.settings (
+create table if not exists public.settings (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   business_name text not null default 'EVOLAIRE',
@@ -61,7 +61,7 @@ comment on table public.settings is 'Business profile and invoice defaults. One 
 -- Customers
 -- -----------------------------------------------------------------------------
 
-create table public.customers (
+create table if not exists public.customers (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   name text not null check (length(trim(name)) > 0),
@@ -75,14 +75,14 @@ create table public.customers (
   constraint customers_id_user_id_key unique (id, user_id)
 );
 
-create index customers_user_id_name_idx on public.customers (user_id, name);
-create index customers_name_trgm_idx on public.customers using gin (name gin_trgm_ops);
+create index if not exists customers_user_id_name_idx on public.customers (user_id, name);
+create index if not exists customers_name_trgm_idx on public.customers using gin (name gin_trgm_ops);
 
 -- -----------------------------------------------------------------------------
 -- Invoices
 -- -----------------------------------------------------------------------------
 
-create table public.invoices (
+create table if not exists public.invoices (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   invoice_number text not null check (length(trim(invoice_number)) between 1 and 60),
@@ -109,11 +109,11 @@ create table public.invoices (
   constraint invoices_due_date_check check (due_date >= invoice_date)
 );
 
-create index invoices_user_id_invoice_date_idx on public.invoices (user_id, invoice_date desc);
-create index invoices_customer_id_idx on public.invoices (customer_id);
-create index invoices_user_id_status_idx on public.invoices (user_id, status);
-create index invoices_invoice_number_trgm_idx on public.invoices using gin (invoice_number gin_trgm_ops);
-create index invoices_customer_name_trgm_idx on public.invoices using gin (customer_name gin_trgm_ops);
+create index if not exists invoices_user_id_invoice_date_idx on public.invoices (user_id, invoice_date desc);
+create index if not exists invoices_customer_id_idx on public.invoices (customer_id);
+create index if not exists invoices_user_id_status_idx on public.invoices (user_id, status);
+create index if not exists invoices_invoice_number_trgm_idx on public.invoices using gin (invoice_number gin_trgm_ops);
+create index if not exists invoices_customer_name_trgm_idx on public.invoices using gin (customer_name gin_trgm_ops);
 
 comment on column public.invoices.customer_name is 'Snapshot of the customer name at the time the invoice was created. Renaming a customer never changes existing invoices.';
 
@@ -121,7 +121,7 @@ comment on column public.invoices.customer_name is 'Snapshot of the customer nam
 -- Invoice line items (max 14, totalled by the database)
 -- -----------------------------------------------------------------------------
 
-create table public.invoice_items (
+create table if not exists public.invoice_items (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   invoice_id uuid not null,
@@ -137,13 +137,13 @@ create table public.invoice_items (
   constraint invoice_items_position_key unique (invoice_id, position)
 );
 
-create index invoice_items_invoice_id_idx on public.invoice_items (invoice_id);
+create index if not exists invoice_items_invoice_id_idx on public.invoice_items (invoice_id);
 
 -- -----------------------------------------------------------------------------
 -- Payments
 -- -----------------------------------------------------------------------------
 
-create table public.payments (
+create table if not exists public.payments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   invoice_id uuid not null,
@@ -157,29 +157,34 @@ create table public.payments (
     references public.invoices (id, user_id) on delete cascade
 );
 
-create index payments_invoice_id_idx on public.payments (invoice_id);
-create index payments_user_id_paid_on_idx on public.payments (user_id, paid_on desc);
+create index if not exists payments_invoice_id_idx on public.payments (invoice_id);
+create index if not exists payments_user_id_paid_on_idx on public.payments (user_id, paid_on desc);
 
 -- -----------------------------------------------------------------------------
 -- updated_at triggers
 -- -----------------------------------------------------------------------------
 
+drop trigger if exists settings_set_updated_at on public.settings;
 create trigger settings_set_updated_at
   before update on public.settings
   for each row execute function public.set_updated_at();
 
+drop trigger if exists customers_set_updated_at on public.customers;
 create trigger customers_set_updated_at
   before update on public.customers
   for each row execute function public.set_updated_at();
 
+drop trigger if exists invoices_set_updated_at on public.invoices;
 create trigger invoices_set_updated_at
   before update on public.invoices
   for each row execute function public.set_updated_at();
 
+drop trigger if exists invoice_items_set_updated_at on public.invoice_items;
 create trigger invoice_items_set_updated_at
   before update on public.invoice_items
   for each row execute function public.set_updated_at();
 
+drop trigger if exists payments_set_updated_at on public.payments;
 create trigger payments_set_updated_at
   before update on public.payments
   for each row execute function public.set_updated_at();
@@ -342,6 +347,7 @@ begin
 end;
 $$;
 
+drop trigger if exists invoice_items_recalculate_totals on public.invoice_items;
 create trigger invoice_items_recalculate_totals
   after insert or update or delete on public.invoice_items
   for each row execute function public.on_invoice_item_change();
@@ -358,6 +364,7 @@ begin
 end;
 $$;
 
+drop trigger if exists invoices_recalculate_totals on public.invoices;
 create trigger invoices_recalculate_totals
   after update of discount_amount, tax_rate on public.invoices
   for each row execute function public.on_invoice_financial_change();
@@ -410,6 +417,7 @@ begin
 end;
 $$;
 
+drop trigger if exists payments_prevent_overpayment on public.payments;
 create trigger payments_prevent_overpayment
   before insert or update on public.payments
   for each row execute function public.enforce_payment_total();
@@ -1282,48 +1290,68 @@ alter table public.invoices enable row level security;
 alter table public.invoice_items enable row level security;
 alter table public.payments enable row level security;
 
+drop policy if exists "settings_select_own" on public.settings;
 create policy "settings_select_own" on public.settings
   for select to authenticated using (user_id = auth.uid());
+drop policy if exists "settings_insert_own" on public.settings;
 create policy "settings_insert_own" on public.settings
   for insert to authenticated with check (user_id = auth.uid());
+drop policy if exists "settings_update_own" on public.settings;
 create policy "settings_update_own" on public.settings
   for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "settings_delete_own" on public.settings;
 create policy "settings_delete_own" on public.settings
   for delete to authenticated using (user_id = auth.uid());
 
+drop policy if exists "customers_select_own" on public.customers;
 create policy "customers_select_own" on public.customers
   for select to authenticated using (user_id = auth.uid());
+drop policy if exists "customers_insert_own" on public.customers;
 create policy "customers_insert_own" on public.customers
   for insert to authenticated with check (user_id = auth.uid());
+drop policy if exists "customers_update_own" on public.customers;
 create policy "customers_update_own" on public.customers
   for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "customers_delete_own" on public.customers;
 create policy "customers_delete_own" on public.customers
   for delete to authenticated using (user_id = auth.uid());
 
+drop policy if exists "invoices_select_own" on public.invoices;
 create policy "invoices_select_own" on public.invoices
   for select to authenticated using (user_id = auth.uid());
+drop policy if exists "invoices_insert_own" on public.invoices;
 create policy "invoices_insert_own" on public.invoices
   for insert to authenticated with check (user_id = auth.uid());
+drop policy if exists "invoices_update_own" on public.invoices;
 create policy "invoices_update_own" on public.invoices
   for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "invoices_delete_own" on public.invoices;
 create policy "invoices_delete_own" on public.invoices
   for delete to authenticated using (user_id = auth.uid());
 
+drop policy if exists "invoice_items_select_own" on public.invoice_items;
 create policy "invoice_items_select_own" on public.invoice_items
   for select to authenticated using (user_id = auth.uid());
+drop policy if exists "invoice_items_insert_own" on public.invoice_items;
 create policy "invoice_items_insert_own" on public.invoice_items
   for insert to authenticated with check (user_id = auth.uid());
+drop policy if exists "invoice_items_update_own" on public.invoice_items;
 create policy "invoice_items_update_own" on public.invoice_items
   for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "invoice_items_delete_own" on public.invoice_items;
 create policy "invoice_items_delete_own" on public.invoice_items
   for delete to authenticated using (user_id = auth.uid());
 
+drop policy if exists "payments_select_own" on public.payments;
 create policy "payments_select_own" on public.payments
   for select to authenticated using (user_id = auth.uid());
+drop policy if exists "payments_insert_own" on public.payments;
 create policy "payments_insert_own" on public.payments
   for insert to authenticated with check (user_id = auth.uid());
+drop policy if exists "payments_update_own" on public.payments;
 create policy "payments_update_own" on public.payments
   for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "payments_delete_own" on public.payments;
 create policy "payments_delete_own" on public.payments
   for delete to authenticated using (user_id = auth.uid());
 
@@ -1419,5 +1447,7 @@ grant execute on function public.format_invoice_number(text, text, integer, inte
 
 -- Trigger functions are not directly callable through the API.
 revoke all on function public.handle_new_user() from public, anon, authenticated;
+
+notify pgrst, 'reload schema';
 
 commit;
