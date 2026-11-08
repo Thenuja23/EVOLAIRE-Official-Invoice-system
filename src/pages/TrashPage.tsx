@@ -127,8 +127,8 @@ export function TrashPage() {
           icon={<Trash2 className="h-5 w-5" />}
         />
       ) : (
-        <div className="grid gap-5 xl:grid-cols-2">
-          <Card>
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+          <Card className="min-w-0">
             <CardHeader
               title="Invoices"
               description={`${invoiceRows.length} in the trash`}
@@ -192,7 +192,7 @@ export function TrashPage() {
             </div>
           </Card>
 
-          <Card>
+          <Card className="min-w-0">
             <CardHeader
               title="Customers"
               description={`${customerRows.length} in the trash`}

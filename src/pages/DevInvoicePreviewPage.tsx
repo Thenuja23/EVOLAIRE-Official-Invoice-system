@@ -42,7 +42,7 @@ const sample: InvoiceDocumentData = {
 
 export function DevInvoicePreviewPage() {
   return (
-    <div className="min-h-screen bg-ink-100 p-8">
+    <div className="min-h-screen bg-ink-100 p-4 sm:p-8">
       <div className="mx-auto max-w-[900px]">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-ink-500">
           Invoice document preview

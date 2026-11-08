@@ -248,8 +248,8 @@ export function SettingsPage() {
         }
       />
 
-      <form id="settings-form" onSubmit={onSubmit} className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-5">
+      <form id="settings-form" onSubmit={onSubmit} className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-w-0 space-y-5">
           <Card>
             <CardHeader
               title="Business details"
@@ -424,7 +424,7 @@ export function SettingsPage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">
                   Next invoice number preview
                 </p>
-                <p className="mt-1 text-lg font-bold tracking-tight text-ink-950 dark:text-white">
+                <p className="mt-1 break-all text-lg font-bold tracking-tight text-ink-950 dark:text-white">
                   {previewNumber}
                 </p>
               </div>
@@ -438,8 +438,8 @@ export function SettingsPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <Card>
+        <div className="min-w-0 space-y-4">
+          <Card className="min-w-0">
             <CardHeader
               title="Logo"
               description="PNG, JPG or WebP up to 2 MB. Private to your account."

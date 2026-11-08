@@ -344,7 +344,7 @@ export function InvoiceEditorPage() {
     return (
       <div className="space-y-5">
         <Skeleton className="h-16 w-full" />
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,560px)]">
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)]">
           <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <Skeleton key={index} className="h-52 w-full rounded-2xl" />
@@ -452,8 +452,8 @@ export function InvoiceEditorPage() {
         }
       />
 
-      <form onSubmit={onSubmit} className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,560px)] 2xl:grid-cols-[minmax(0,1fr)_620px]">
-        <div className="space-y-5">
+      <form onSubmit={onSubmit} className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)] 2xl:grid-cols-[minmax(0,1fr)_620px]">
+        <div className="min-w-0 space-y-5">
           <Card>
             <CardHeader title="Invoice details" description="Number, dates and project." />
             <div className="grid gap-4 p-5 pt-4 sm:grid-cols-2">
@@ -464,11 +464,17 @@ export function InvoiceEditorPage() {
                 error={formState.errors.invoice_number?.message}
                 className="sm:col-span-2"
               >
-                <div className="flex gap-2">
-                  <Input id="invoice-number" placeholder="EVO-2026-114" {...register('invoice_number')} />
+                <div className="flex flex-col gap-2 xs:flex-row">
+                  <Input
+                    id="invoice-number"
+                    placeholder="EVO-2026-114"
+                    className="min-w-0 flex-1"
+                    {...register('invoice_number')}
+                  />
                   <Button
                     type="button"
                     variant="secondary"
+                    className="flex-none"
                     leadingIcon={<RefreshCw className="h-4 w-4" />}
                     onClick={() => void generateNumber()}
                   >
@@ -552,8 +558,8 @@ export function InvoiceEditorPage() {
               description={`Up to ${MAX_INVOICE_ITEMS} lines. Empty rows are ignored.`}
               action={<span className="text-xs font-medium text-ink-400 dark:text-ink-500">{fields.length}/{MAX_INVOICE_ITEMS}</span>}
             />
-            <div className="p-5 pt-4">
-              <div className="hidden gap-2 pb-2 text-[10px] font-bold uppercase tracking-wide text-ink-400 sm:grid sm:grid-cols-[minmax(0,1fr)_72px_112px_104px_36px] dark:text-ink-500">
+            <div className="line-items p-5 pt-4">
+              <div className="line-items-head gap-2 pb-2 text-[10px] font-bold uppercase tracking-wide text-ink-400 dark:text-ink-500">
                 <span>Description</span>
                 <span>Unit</span>
                 <span>Price</span>
@@ -571,9 +577,12 @@ export function InvoiceEditorPage() {
                   return (
                     <div
                       key={field.id}
-                      className="grid gap-2 bg-white p-3 sm:grid-cols-[minmax(0,1fr)_72px_112px_104px_36px] sm:items-start dark:bg-ink-900"
+                      className="line-item-row grid grid-cols-2 gap-2 bg-white p-3 dark:bg-ink-900"
                     >
-                      <div>
+                      <div className="line-item-desc col-span-2 min-w-0">
+                        <span className="line-item-compact-label mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-400 dark:text-ink-500">
+                          Description
+                        </span>
                         <Input
                           placeholder={`Line ${index + 1} description`}
                           aria-label={`Description for line ${index + 1}`}
@@ -585,7 +594,10 @@ export function InvoiceEditorPage() {
                           </p>
                         ) : null}
                       </div>
-                      <div>
+                      <div className="min-w-0">
+                        <span className="line-item-compact-label mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-400 dark:text-ink-500">
+                          Unit
+                        </span>
                         <Input
                           type="number"
                           step="0.01"
@@ -600,7 +612,10 @@ export function InvoiceEditorPage() {
                           </p>
                         ) : null}
                       </div>
-                      <div>
+                      <div className="min-w-0">
+                        <span className="line-item-compact-label mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-400 dark:text-ink-500">
+                          Price
+                        </span>
                         <Input
                           type="number"
                           step="0.01"
@@ -615,15 +630,20 @@ export function InvoiceEditorPage() {
                           </p>
                         ) : null}
                       </div>
-                      <div className="flex h-10 items-center justify-end text-sm font-semibold text-ink-900 dark:text-white">
-                        {formatMoney(lineTotal, currency)}
+                      <div className="line-item-total min-w-0">
+                        <span className="line-item-compact-label mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-400 dark:text-ink-500">
+                          Line total
+                        </span>
+                        <span className="block break-words text-sm font-semibold leading-tight tabular-nums text-ink-900 dark:text-white">
+                          {formatMoney(lineTotal, currency)}
+                        </span>
                       </div>
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
                         aria-label={`Remove line ${index + 1}`}
-                        className="justify-self-end text-ink-400 hover:text-rose-600 dark:text-ink-500 dark:hover:text-rose-400"
+                        className="line-item-remove justify-self-end self-end text-ink-400 hover:text-rose-600 dark:text-ink-500 dark:hover:text-rose-400"
                         onClick={() => {
                           if (fields.length === 1) {
                             setValue('items.0.description', '', { shouldDirty: true })
@@ -739,7 +759,7 @@ export function InvoiceEditorPage() {
               className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
               onClick={() => setBusinessOpen((open) => !open)}
             >
-              <div>
+              <div className="min-w-0">
                 <p className="flex items-center gap-2 text-sm font-bold text-ink-950 dark:text-white">
                   <Building2 className="h-4 w-4 text-ink-400" /> Business details on this invoice
                 </p>
@@ -747,7 +767,11 @@ export function InvoiceEditorPage() {
                   Pre-filled from Settings. Editing here only changes this invoice.
                 </p>
               </div>
-              {businessOpen ? <ChevronUp className="h-4 w-4 text-ink-400" /> : <ChevronDown className="h-4 w-4 text-ink-400" />}
+              {businessOpen ? (
+                <ChevronUp className="h-4 w-4 flex-none text-ink-400" />
+              ) : (
+                <ChevronDown className="h-4 w-4 flex-none text-ink-400" />
+              )}
             </button>
             {businessOpen ? (
               <div className="border-t border-ink-100 p-5 dark:border-ink-800">
@@ -817,15 +841,15 @@ export function InvoiceEditorPage() {
           </div>
         </div>
 
-        <div className="self-start xl:sticky xl:top-20">
-          <Card className="bg-ink-100/60 p-2 sm:p-3 dark:bg-ink-950/60">
+        <div className="min-w-0 self-start xl:sticky xl:top-20">
+          <Card className="w-full min-w-0 bg-ink-100/60 p-2 sm:p-3 dark:bg-ink-950/60">
             <div className="mb-2 flex items-center justify-between px-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-500 dark:text-ink-400">
                 Live preview
               </p>
               <p className="text-[11px] text-ink-400 dark:text-ink-500">A4 · same as PDF/print</p>
             </div>
-            <div className="overflow-hidden rounded-sm bg-white">
+            <div className="max-w-full overflow-hidden rounded-sm bg-white">
               <InvoicePreview data={previewData} />
             </div>
           </Card>

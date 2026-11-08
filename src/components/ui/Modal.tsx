@@ -50,12 +50,12 @@ export function Modal({ open, onClose, title, description, children, footer, siz
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl animate-fade-in',
+          'relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl animate-fade-in motion-reduce:animate-none',
           'sm:rounded-2xl dark:bg-ink-900 dark:ring-1 dark:ring-ink-800',
           sizes[size],
         )}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-ink-100 px-5 py-4 dark:border-ink-800">
+        <div className="flex items-start justify-between gap-4 border-b border-ink-100 px-4 py-4 sm:px-5 dark:border-ink-800">
           <div className="min-w-0">
             <h2 className="text-base font-bold text-ink-950 dark:text-white">{title}</h2>
             {description ? (
@@ -66,9 +66,11 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             <X className="h-4 w-4" />
           </Button>
         </div>
-        {children ? <div className="overflow-y-auto px-5 py-4">{children}</div> : null}
+        {children ? (
+          <div className="overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">{children}</div>
+        ) : null}
         {footer ? (
-          <div className="flex flex-col-reverse gap-2 border-t border-ink-100 px-5 py-3 sm:flex-row sm:justify-end dark:border-ink-800">
+          <div className="flex flex-col-reverse gap-2 border-t border-ink-100 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:px-5 sm:pb-3 dark:border-ink-800">
             {footer}
           </div>
         ) : null}

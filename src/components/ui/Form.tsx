@@ -2,7 +2,7 @@ import { forwardRef, type InputHTMLAttributes, type ReactNode, type SelectHTMLAt
 import { cn } from '@/lib/utils'
 
 const controlBase =
-  'w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 shadow-sm outline-none transition ' +
+  'w-full min-w-0 rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-base text-ink-900 shadow-sm outline-none transition sm:text-sm ' +
   'placeholder:text-ink-400 focus:border-ink-400 focus:ring-2 focus:ring-ink-200 ' +
   'disabled:cursor-not-allowed disabled:bg-ink-50 disabled:text-ink-400 ' +
   'dark:border-ink-700 dark:bg-ink-900 dark:text-ink-100 dark:placeholder:text-ink-500 ' +
@@ -99,6 +99,7 @@ export function Toggle({ checked, onChange, label, description, disabled, id }: 
         onClick={() => onChange(!checked)}
         className={cn(
           'relative mt-0.5 inline-flex h-6 w-11 flex-none items-center rounded-full transition-colors',
+          "before:absolute before:-inset-2 before:content-['']",
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ink-950',
           checked ? 'bg-ink-950 dark:bg-emerald-500' : 'bg-ink-200 dark:bg-ink-700',
           disabled && 'cursor-not-allowed opacity-50',

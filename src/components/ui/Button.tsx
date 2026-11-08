@@ -22,7 +22,7 @@ const sizes: Record<Size, string> = {
   sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
   md: 'h-10 px-4 text-sm gap-2 rounded-xl',
   lg: 'h-11 px-5 text-sm gap-2 rounded-xl',
-  icon: 'h-9 w-9 rounded-lg',
+  icon: 'h-10 w-10 rounded-lg sm:h-9 sm:w-9',
 }
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -47,7 +47,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex select-none items-center justify-center font-semibold transition-colors',
+        'inline-flex select-none items-center justify-center whitespace-nowrap font-semibold transition-colors touch-manipulation',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-400 focus-visible:ring-offset-2',
         'disabled:pointer-events-none disabled:opacity-50',
         'dark:focus-visible:ring-offset-ink-950',

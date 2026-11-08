@@ -250,7 +250,7 @@ export function InvoiceListPage() {
       />
 
       <Card className="p-4">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))]">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))]">
           <Field label="Search">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
@@ -306,7 +306,7 @@ export function InvoiceListPage() {
           </Field>
         </div>
 
-        <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+        <div className="mt-3 grid gap-3 xs:grid-cols-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
           <Field label="Date from">
             <Input type="date" value={from} onChange={(event) => setFrom(event.target.value)} />
           </Field>
@@ -318,7 +318,7 @@ export function InvoiceListPage() {
             leadingIcon={<FilterX className="h-4 w-4" />}
             onClick={clearFilters}
             disabled={!hasFilters}
-            className="justify-self-start sm:justify-self-auto"
+            className="justify-self-start xs:col-span-2 sm:col-span-1 sm:justify-self-auto"
           >
             Clear filters
           </Button>
@@ -362,7 +362,7 @@ export function InvoiceListPage() {
         />
       ) : (
         <Card className="overflow-visible">
-          <div className="hidden overflow-x-auto lg:block">
+          <div className="hidden overflow-x-auto overscroll-x-contain lg:block">
             <table className="w-full min-w-[940px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-ink-100 text-[11px] font-bold uppercase tracking-wide text-ink-400 dark:border-ink-800 dark:text-ink-500">
@@ -445,21 +445,21 @@ export function InvoiceListPage() {
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-ink-50 p-2.5 text-xs dark:bg-ink-800/50">
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-ink-400 dark:text-ink-500">Total</p>
-                    <p className="mt-0.5 font-semibold text-ink-900 dark:text-white">
+                    <p className="mt-0.5 break-words font-semibold leading-tight tabular-nums text-ink-900 dark:text-white">
                       {formatMoney(invoice.total, currency)}
                     </p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-ink-400 dark:text-ink-500">Paid</p>
-                    <p className="mt-0.5 font-semibold text-ink-700 dark:text-ink-200">
+                    <p className="mt-0.5 break-words font-semibold leading-tight tabular-nums text-ink-700 dark:text-ink-200">
                       {formatMoney(invoice.paid, currency)}
                     </p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-ink-400 dark:text-ink-500">Balance</p>
-                    <p className="mt-0.5 font-semibold text-ink-900 dark:text-white">
+                    <p className="mt-0.5 break-words font-semibold leading-tight tabular-nums text-ink-900 dark:text-white">
                       {formatMoney(invoice.balance, currency)}
                     </p>
                   </div>
@@ -471,7 +471,7 @@ export function InvoiceListPage() {
             ))}
           </div>
 
-          <div className="px-4 pb-4">
+          <div className="px-3 pb-4 sm:px-4">
             <Pagination page={page} pageSize={INVOICE_PAGE_SIZE} total={total} onPageChange={setPage} />
           </div>
         </Card>

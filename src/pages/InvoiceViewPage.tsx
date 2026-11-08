@@ -390,7 +390,7 @@ export function InvoiceViewPage() {
               Restore it to keep working with it, or delete it permanently. Invoice numbers are never reused.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="secondary"
               size="sm"
@@ -407,8 +407,8 @@ export function InvoiceViewPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="bg-ink-100/60 p-2 sm:p-3 dark:bg-ink-950/60">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <Card className="min-w-0 bg-ink-100/60 p-2 sm:p-3 dark:bg-ink-950/60">
           {documentData ? (
             <InvoicePreview data={documentData} />
           ) : (
@@ -416,22 +416,28 @@ export function InvoiceViewPage() {
           )}
         </Card>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Card>
             <CardHeader title="Payment summary" />
             <div className="space-y-3 p-5 pt-4">
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-xl bg-ink-50 px-2 py-2.5 dark:bg-ink-800/60">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Total</p>
-                  <p className="mt-1 text-sm font-bold text-ink-900 dark:text-white">{formatMoney(invoice.total, currency)}</p>
+                <div className="min-w-0 rounded-xl bg-ink-50 px-2 py-2.5 dark:bg-ink-800/60">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-400 sm:text-[10px] dark:text-ink-500">Total</p>
+                  <p className="mt-1 break-words text-[11px] font-bold leading-tight tabular-nums text-ink-900 sm:text-sm dark:text-white">
+                    {formatMoney(invoice.total, currency)}
+                  </p>
                 </div>
-                <div className="rounded-xl bg-emerald-50 px-2 py-2.5 dark:bg-emerald-500/10">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-600/80 dark:text-emerald-400/80">Paid</p>
-                  <p className="mt-1 text-sm font-bold text-emerald-700 dark:text-emerald-300">{formatMoney(invoice.paid, currency)}</p>
+                <div className="min-w-0 rounded-xl bg-emerald-50 px-2 py-2.5 dark:bg-emerald-500/10">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-emerald-600/80 sm:text-[10px] dark:text-emerald-400/80">Paid</p>
+                  <p className="mt-1 break-words text-[11px] font-bold leading-tight tabular-nums text-emerald-700 sm:text-sm dark:text-emerald-300">
+                    {formatMoney(invoice.paid, currency)}
+                  </p>
                 </div>
-                <div className="rounded-xl bg-amber-50 px-2 py-2.5 dark:bg-amber-500/10">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-600/80 dark:text-amber-400/80">Balance</p>
-                  <p className="mt-1 text-sm font-bold text-amber-700 dark:text-amber-300">{formatMoney(invoice.balance, currency)}</p>
+                <div className="min-w-0 rounded-xl bg-amber-50 px-2 py-2.5 dark:bg-amber-500/10">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-amber-600/80 sm:text-[10px] dark:text-amber-400/80">Balance</p>
+                  <p className="mt-1 break-words text-[11px] font-bold leading-tight tabular-nums text-amber-700 sm:text-sm dark:text-amber-300">
+                    {formatMoney(invoice.balance, currency)}
+                  </p>
                 </div>
               </div>
 
@@ -575,13 +581,13 @@ export function InvoiceViewPage() {
             <div className="space-y-2.5 p-5 pt-4 text-sm">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-ink-500 dark:text-ink-400">Customer</span>
-                <span className="truncate text-right font-medium text-ink-900 dark:text-white">
+                <span className="min-w-0 break-words text-right font-medium text-ink-900 dark:text-white">
                   {invoice.customer_name || '—'}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-ink-500 dark:text-ink-400">Project</span>
-                <span className="truncate text-right font-medium text-ink-900 dark:text-white">
+                <span className="min-w-0 break-words text-right font-medium text-ink-900 dark:text-white">
                   {invoice.project_name || '—'}
                 </span>
               </div>

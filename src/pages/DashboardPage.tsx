@@ -29,6 +29,10 @@ import { getErrorMessage } from '@/lib/errors'
 import { formatAmount, formatDate, formatMoney, monthLabel } from '@/lib/format'
 import type { InvoiceSummary } from '@/types/models'
 
+function formatChartAmount(value: number) {
+  return formatAmount(value).replace(/\.00$/, '')
+}
+
 function InvoiceRow({ invoice, currency }: { invoice: InvoiceSummary; currency: string }) {
   return (
     <Link
@@ -36,7 +40,7 @@ function InvoiceRow({ invoice, currency }: { invoice: InvoiceSummary; currency: 
       className="flex items-center justify-between gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-ink-50 dark:hover:bg-ink-800/60"
     >
       <div className="min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="truncate text-sm font-semibold text-ink-900 dark:text-white">
             {invoice.invoice_number}
           </span>
@@ -108,8 +112,8 @@ function FocusList({
           <span
             className={
               tone === 'rose'
-                ? 'flex-none text-sm font-semibold text-rose-600 dark:text-rose-400'
-                : 'flex-none text-sm font-semibold text-sky-600 dark:text-sky-400'
+                ? 'flex-none text-right text-sm font-semibold text-rose-600 dark:text-rose-400'
+                : 'flex-none text-right text-sm font-semibold text-sky-600 dark:text-sky-400'
             }
           >
             {formatMoney(invoice.balance, currency)}
@@ -170,7 +174,7 @@ export function DashboardPage() {
         />
       ) : (
         <>
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {metrics.isLoading ? (
               Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-[106px] rounded-2xl" />)
             ) : (
@@ -220,13 +224,13 @@ export function DashboardPage() {
             />
           ) : null}
 
-          <div className="grid gap-5 xl:grid-cols-[1.55fr_1fr]">
-            <Card>
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.55fr_1fr]">
+            <Card className="min-w-0">
               <CardHeader
                 title="Revenue"
                 description="Billed and received over the last 12 months"
                 action={
-                  <div className="flex items-center gap-3 text-[11px] font-medium text-ink-500 dark:text-ink-400">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-ink-500 dark:text-ink-400">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="h-2 w-2 rounded-full" style={{ background: billedColor }} /> Billed
                     </span>
@@ -236,7 +240,7 @@ export function DashboardPage() {
                   </div>
                 }
               />
-              <div className="h-[280px] px-2 pb-4 pt-4">
+              <div className="h-[250px] min-w-0 overflow-hidden px-2 pb-4 pt-4 sm:h-[280px]">
                 {revenue.isLoading ? (
                   <Skeleton className="h-full w-full" />
                 ) : (
@@ -263,7 +267,7 @@ export function DashboardPage() {
                         minTickGap={16}
                       />
                       <YAxis
-                        tickFormatter={(value: number) => formatAmount(value)}
+                        tickFormatter={formatChartAmount}
                         tick={{ fontSize: 11, fill: axisColor }}
                         tickLine={false}
                         axisLine={false}
@@ -305,7 +309,7 @@ export function DashboardPage() {
               </div>
             </Card>
 
-            <Card className="flex flex-col">
+            <Card className="flex min-w-0 flex-col">
               <CardHeader
                 title="Recent invoices"
                 description="The latest records you created"
@@ -342,8 +346,8 @@ export function DashboardPage() {
             </Card>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-2">
-            <Card>
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <Card className="min-w-0">
               <CardHeader
                 title="Overdue"
                 description="Follow these up first"
@@ -368,7 +372,7 @@ export function DashboardPage() {
               </div>
             </Card>
 
-            <Card>
+            <Card className="min-w-0">
               <CardHeader
                 title="Due soon"
                 description="Due in the next 7 days"

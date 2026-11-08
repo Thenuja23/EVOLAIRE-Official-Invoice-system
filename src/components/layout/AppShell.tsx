@@ -115,8 +115,13 @@ export function AppShell() {
     if (!mobileOpen) return
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
     return () => {
       document.body.style.overflow = previous
+      document.removeEventListener('keydown', onKeyDown)
     }
   }, [mobileOpen])
 
@@ -134,12 +139,18 @@ export function AppShell() {
             onClick={() => setMobileOpen(false)}
             className="absolute inset-0 cursor-default bg-ink-950/50 backdrop-blur-sm"
           />
-          <aside className="relative h-full w-64 max-w-[82vw] bg-white shadow-2xl dark:bg-ink-900">
+          <aside
+            id="mobile-navigation"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation"
+            className="relative flex h-full w-64 max-w-[82vw] flex-col overflow-y-auto overscroll-contain bg-white shadow-2xl dark:bg-ink-900"
+          >
             <button
               type="button"
               aria-label="Close navigation"
               onClick={() => setMobileOpen(false)}
-              className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink-500 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-800"
+              className="absolute right-2 top-2 z-10 inline-flex h-10 w-10 touch-manipulation items-center justify-center rounded-lg text-ink-500 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-800"
             >
               <X className="h-4 w-4" />
             </button>
@@ -155,6 +166,8 @@ export function AppShell() {
             size="icon"
             className="lg:hidden"
             aria-label="Open navigation"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
             onClick={() => setMobileOpen(true)}
           >
             <MenuIcon className="h-5 w-5" />
@@ -180,15 +193,17 @@ export function AppShell() {
             </Button>
             <Button
               size="sm"
+              className="h-10 px-2.5 xs:px-3 lg:h-8"
               leadingIcon={<Plus className="h-4 w-4" />}
+              aria-label="New invoice"
               onClick={() => navigate('/invoices/new')}
             >
-              New invoice
+              <span className="hidden xs:inline">New invoice</span>
             </Button>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
+        <main className="mx-auto w-full max-w-7xl px-4 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:py-8">
           <Outlet />
         </main>
       </div>

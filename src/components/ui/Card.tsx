@@ -36,9 +36,9 @@ export function CardHeader({
   return (
     <div className={cn('flex items-start justify-between gap-4 px-5 pt-5', className)}>
       <div className="min-w-0">
-        <h2 className="text-sm font-bold text-ink-950 dark:text-white">{title}</h2>
+        <h2 className="break-words text-sm font-bold text-ink-950 dark:text-white">{title}</h2>
         {description ? (
-          <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-400">{description}</p>
+          <p className="mt-0.5 break-words text-xs text-ink-500 dark:text-ink-400">{description}</p>
         ) : null}
       </div>
       {action ? <div className="flex-none">{action}</div> : null}
@@ -61,9 +61,11 @@ export function PageHeader({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {breadcrumb ? <div className="mb-1.5">{breadcrumb}</div> : null}
-        <h1 className="text-2xl font-bold tracking-tight text-ink-950 dark:text-white">{title}</h1>
+        <h1 className="break-words text-2xl font-bold tracking-tight text-ink-950 dark:text-white">
+          {title}
+        </h1>
         {description ? (
-          <p className="mt-1 text-sm text-ink-500 dark:text-ink-400">{description}</p>
+          <p className="mt-1 break-words text-sm text-ink-500 dark:text-ink-400">{description}</p>
         ) : null}
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}

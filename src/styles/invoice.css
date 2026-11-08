@@ -320,6 +320,8 @@
 
 .invoice-preview-shell {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   border-radius: 2px;
   background: #ffffff;

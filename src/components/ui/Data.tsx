@@ -28,7 +28,7 @@ export function StatCard({ label, value, hint, icon, tone = 'default' }: StatCar
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-500 dark:text-ink-400">
             {label}
           </p>
-          <p className="mt-1.5 truncate text-xl font-bold tracking-tight text-ink-950 dark:text-white sm:text-2xl">
+          <p className="mt-1.5 break-words text-xl font-bold leading-tight tracking-tight text-ink-950 dark:text-white sm:text-2xl">
             {value}
           </p>
           {hint ? <p className="mt-1 text-xs text-ink-400 dark:text-ink-500">{hint}</p> : null}
@@ -75,7 +75,7 @@ export function Pagination({ page, pageSize, total, onPageChange }: PaginationPr
         <span className="font-semibold text-ink-700 dark:text-ink-200">{last}</span> of{' '}
         <span className="font-semibold text-ink-700 dark:text-ink-200">{total}</span>
       </p>
-      <div className="flex items-center gap-1">
+      <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
         <Button
           variant="outline"
           size="icon"
@@ -85,27 +85,32 @@ export function Pagination({ page, pageSize, total, onPageChange }: PaginationPr
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        {pageNumbers(page, totalPages).map((value, index) =>
-          value === '…' ? (
-            <span key={`gap-${index}`} className="px-1 text-xs text-ink-400">
-              …
-            </span>
-          ) : (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onPageChange(value)}
-              className={cn(
-                'h-9 min-w-9 rounded-lg px-2 text-xs font-semibold transition-colors',
-                value === page
-                  ? 'bg-ink-950 text-white dark:bg-white dark:text-ink-950'
-                  : 'text-ink-600 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-800',
-              )}
-            >
-              {value}
-            </button>
-          ),
-        )}
+        <span className="text-xs font-semibold text-ink-500 dark:text-ink-400 sm:hidden">
+          Page {page} of {totalPages}
+        </span>
+        <div className="hidden items-center gap-1 sm:flex">
+          {pageNumbers(page, totalPages).map((value, index) =>
+            value === '…' ? (
+              <span key={`gap-${index}`} className="px-1 text-xs text-ink-400">
+                …
+              </span>
+            ) : (
+              <button
+                key={value}
+                type="button"
+                onClick={() => onPageChange(value)}
+                className={cn(
+                  'h-9 min-w-9 rounded-lg px-2 text-xs font-semibold transition-colors',
+                  value === page
+                    ? 'bg-ink-950 text-white dark:bg-white dark:text-ink-950'
+                    : 'text-ink-600 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-800',
+                )}
+              >
+                {value}
+              </button>
+            ),
+          )}
+        </div>
         <Button
           variant="outline"
           size="icon"

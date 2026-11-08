@@ -126,7 +126,7 @@ export function CustomerDetailPage() {
         }
         title={
           <span className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink-100 text-sm font-bold text-ink-700 dark:bg-ink-800 dark:text-ink-100">
+            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-ink-100 text-sm font-bold text-ink-700 dark:bg-ink-800 dark:text-ink-100">
               {initials(record.name)}
             </span>
             {record.name}
@@ -159,7 +159,7 @@ export function CustomerDetailPage() {
         }
       />
 
-      <section className="grid gap-3 sm:grid-cols-3">
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {stats.isLoading ? (
           Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={index} className="h-[106px] rounded-2xl" />
@@ -190,8 +190,8 @@ export function CustomerDetailPage() {
         )}
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Card>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <Card className="min-w-0">
           <CardHeader
             title="Invoices"
             description={
@@ -259,8 +259,8 @@ export function CustomerDetailPage() {
           </div>
         </Card>
 
-        <div className="space-y-4">
-          <Card>
+        <div className="min-w-0 space-y-4">
+          <Card className="min-w-0">
             <CardHeader title="Contact" />
             <div className="space-y-3 p-5 pt-4 text-sm">
               <div className="flex items-start gap-2.5">
