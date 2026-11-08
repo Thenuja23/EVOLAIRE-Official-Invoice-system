@@ -23,8 +23,8 @@ import { ErrorState, Skeleton } from '@/components/ui/Feedback'
 import { Field, Input, Textarea, Toggle } from '@/components/ui/Form'
 import { ConfirmDialog } from '@/components/ui/Modal'
 import { useInvoiceCount } from '@/hooks/useInvoices'
+import { useLoadSampleData } from '@/hooks/useMutations'
 import {
-  useLoadSampleData,
   useSettings,
   useUpdateSettings,
   useUploadLogo,
